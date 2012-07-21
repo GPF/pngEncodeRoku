@@ -26,23 +26,57 @@ function main()
         screen=CreateObject("roScreen", true)
     endif
 
+'m.profiler = NewProfiler(1) 
 
-    pixels = CreateObject("roByteArray")
-    pixels=ROKURGBA()
-	
+'    pixels = CreateObject("roByteArray")
+'    pixels2 = CreateObject("roByteArray")
+'    pix=ROKURGBA()
+'	For i=0 to pix.count()
+'		pixels[i]=pix[i]
+'
+'	End For 
+'
+'    'pixels2.FromHexString(pixels)
+'    pixs=pixels.toHexString()
+'
+'    'print pixels[0];",";pixels[1];",";pixels[2];",";pixels[3];",";pixels[4];",";pixels[5];",";pixels[6]
+'    print pixs.left(160*8)+chr(10)+chr(13)
+'    regfind="(.{"+(160*8).toStr()+"})"
+'    print regfind+chr(10)+chr(13)
+'    r = CreateObject("roRegex",regfind , "")
+'    pixs=r.ReplaceAll(pixs, "\100")
+'    
+'    
+'    
+'    
+'    pixs="00"+pixs.left(pixs.len()-2)
+'    
+'    print pixs.left(161*8)
+'    pixels2.FromHexString(pixs)
+'
+'    'print pixels2[0];",";pixels2[1];",";pixels2[2];",";pixels2[3];",";pixels2[4];",";pixels2[5];",";pixels2[6]
+'    
+'    
+'   'stop
+    
+    
+    
+    
+    
+    
+    
     screen.Clear(&HFFFFFF)
     screen.SwapBuffers()
     
-    ' bigbm=CreateObject("roBitmap", "pkg:/images/site_logo.jpg")
+	bigbm=CreateObject("roBitmap", "pkg:/images/site_logo.gif")
 
-               '     stop
-    'if bigbm = invalid
-    '    print "bigbm create failed"
-    '    stop
-    'endif
+	if bigbm = invalid
+		print "bigbm create failed"
+	
+ 	endif
 
-   'screen.drawobject(20, 20, bigbm)
-   'screen.SwapBuffers()
+   screen.drawobject(0, 0, bigbm)
+   screen.SwapBuffers()
     
  ' Test PNGFB 
  
@@ -59,21 +93,19 @@ function main()
   
     'Dim pixels[4*bigbm.Getwidth()*bigbm.getheight()]
     'apixels = CreateObject("roByteArray")
-    'pixels = CreateObject("roByteArray")
-    'pixels = bigbm.GetByteArray(0,0,320, 200)  
-
-    'for y = 0 to bigbm.GetHeight()
-    'for x=0 to bigbm.GetWidth()
-
-    'apixel=bigbm.GetByteArray(x,y,1, 1)
-    'print apixel.toHexString()	 
-    'print apixel[0];",";apixel[1];",";apixel[2];",";apixel[3]
     
-    'pixels.append(apixel)
+    pixels = CreateObject("roByteArray")
+    apixels = CreateObject("roByteArray")
+    'pixels = bigbm.GetByteArray(0,0,bigbm.GetWidth(), bigbm.GetHeight())  
 
+	for y = 0 to bigbm.GetHeight()
+	'for x=0 to bigbm.GetWidth()
 
-    'end for
-    'end for
+	apixel=bigbm.GetByteArray(0,y,bigbm.GetWidth(), 1)
+	pixels.append(apixel)
+
+	'end for
+	end for
     
     'tmp = rdTempFile(".png")
     'print "pixels File "+tmp    
@@ -86,19 +118,21 @@ function main()
     
     Print "Encoding PNG now"
     png = CreateObject("roByteArray")
-    png = toPNG(160,69,pixels)
+'m.profiler.start("Create PNG")     
+    png = toPNG(bigbm.GetWidth(),bigbm.GetHeight(),pixels,false)
+'m.profiler.stop("Create PNG")     
     print "PNG Count = "+ png.Count().ToStr()
-    'tmp = "tmp:/hello.png" 
+
     tmp = rdTempFile(".png")
     print "File "+tmp    
     png.writefile(tmp)
-    print "File "+tmp
+    print "Displaying PNG"
     
   
-    'myurl=CreateObject("roUrlTransfer")
-    'myurl.SetUrl("http://192.168.2.2/roku/upload.php")
-    'myurl.AddHeader("Content-Type", "image/png")
-    'myurl.PostFromFile(tmp)
+    myurl=CreateObject("roUrlTransfer")
+    myurl.SetUrl("http://192.168.2.2/roku/upload.php")
+    myurl.AddHeader("Content-Type", "image/png")
+    myurl.PostFromFile(tmp)
     
     'stop   
 
@@ -114,8 +148,11 @@ function main()
 
 
     'screen.drawobject(0, 0, bigbm)
-    screen.drawobject(180, 90, newPNG)
+    'screen.drawobject(bigbm.GetWidth(), bigbm.GetHeight(), newPNG)
+    screen.drawobject(0, 0, newPNG)
     screen.SwapBuffers()    
+
+'m.profiler.DumpStats()
 
     msgport = CreateObject("roMessagePort")
     screen.SetPort(msgport)
