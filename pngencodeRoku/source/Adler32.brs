@@ -60,19 +60,11 @@ function ADLER32calc() as object
 		'Methods
 		ResetAdler: function () as integer
 			m.s1%=1
-			m.s2%=2
+			m.s2%=0
 		end function
 		UpdateAdler: function (abs% as integer)
-			'print "ms1= "+m.s1%.toStr()
-			'print "ms2= "+m.s2%.toStr()	
-			'print "abs= "+abs%.toStr()
-			's1%=m.s1%
-			's2%=m.s2%
 			m.s1% = (m.s1% + abs%) MOD 65521
 			m.s2% = (m.s2% + m.s1%) MOD 65521
-			'm.s1%=s1%
-			'm.s2%=s2%
-
 		end function
 		TotalAdler: function () as integer
 			return (m.s2%*65536) + m.s1%
