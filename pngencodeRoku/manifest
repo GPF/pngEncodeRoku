@@ -1,4 +1,4 @@
-title=pngFB
+title=pngEncodeRoku
 subtitle=Minimal PNG encoder to create PNG from RGBA arrays
 imajor_version=1
 minor_version=0

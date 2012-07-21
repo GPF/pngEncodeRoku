@@ -18,11 +18,33 @@ function rdBAcopy(source as object, index_start = 0 as integer, index_end = 0 as
 	end if
 
 	dest = CreateObject("roByteArray")
-	dest.setresize(index_end - index_start, true)
-
-	for i = index_start to index_end - 1
-		dest[i - index_start] = source[i]
-	end for
+   	
+   
+'   m.profiler.start("loop")   
+'	dest.setresize(index_end - index_start, true)
+'
+'	for i = index_start to index_end - 1
+'		dest[i - index_start] = source[i]
+'	end for
+'   m.profiler.Stop("loop")
+'
+'   m.profiler.start("substring")
+	sraw=source.toHexString()
+	strraw=sraw.Mid( (index_start*2), (index_end-index_start)*2)
+	dest.FromHexString(strraw)
+'   m.profiler.Stop("substring")
+'
+'  m.profiler.start("tmpfile")
+'    tmp = rdTempFile(".byt")
+'    'print "Byte File "+tmp    
+'    source.writefile(tmp,index_start,(index_end-index_start))
+'    
+'    dest.readfile(tmp)
+'    DeleteFile(tmp)
+'
+'m.profiler.Stop("tmpfile")
+'
+'m.profiler.DumpStats()
 
 	return dest
 end function
