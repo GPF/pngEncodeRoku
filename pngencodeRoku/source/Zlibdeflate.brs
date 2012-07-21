@@ -1,68 +1,59 @@
-function toZLIB(zraw as object) as object
+function toZLIB(zraw as object,finaldata as boolean) as object
 
 BLOCK_SIZE = 32000
 
 	zlib = CreateObject("roByteArray")
-	
+	azlib = CreateObject("roByteArray")
+	czlib = CreateObject("roByteArray")	
 	'zlib.setresize(zraw.count() + 6 + (zraw.count() / BLOCK_SIZE) * 5, false)
-
+'if (not finaldata) then
 	zlib.push(8)					' CM = 8, CMINFO = 0
 	zlib.push((31 - ((8*2^8) MOD 31)) MOD 31)	  ' FCHECK (FDICT/FLEVEL=0)
-	
+'end if	
 	posit = 0
-
+	'print "zraw.count = "+zraw.count().toStr()
 	while ( (zraw.count() - posit) > BLOCK_SIZE )
 
-		zlib.append(writeUncompressedDeflateBlock(0, zraw, posit, BLOCK_SIZE) )
-
+		azlib=writeUncompressedDeflateBlock(false, zraw, posit, BLOCK_SIZE)
+		'stop
+		zlib.append(azlib)
       		posit = posit + BLOCK_SIZE
 	end while
+	'stop
 
-
-	zlib.append(writeUncompressedDeflateBlock(1, zraw, posit, (zraw.count() - posit)) )
+	czlib=writeUncompressedDeflateBlock(finaldata, zraw, posit, (zraw.count() - posit))
+	zlib.append(czlib)
 	
-	print "zlib.count = "+zlib.count().toStr()
-	'ad= calcADLER32(zraw)
-	'n=ADLER32calc()
-	'for i = 0 to zraw.count()-1
-	'	n.UpdateAdler(zraw[i])
-	'endfor
-	'zlib.append(rdINTtoBA(ad))
-	'ad=n.TotalAdler()
-	
-	'print "ad= "+ad.ToStr()
-	
+	'stop
+'if (not finaldata) then	
 	ad= calcADLER32(zraw)
-	
-	'print "ad= "+ad.ToStr()
-	zlib.append(rdINTtoBA(ad))
-	print "zlib.count +ADLER32= "+zlib.count().toStr()
+	'stop
+	dzlib = CreateObject("roByteArray")
+	dzlib = rdINTtoBA(ad)
+	zlib.append(dzlib)
+'end if
 	return zlib
 end function
 
-function writeUncompressedDeflateBlock(lastcompress as integer, uraw as object, offs as integer, lengths as integer) as object
+function writeUncompressedDeflateBlock(lastcompress as boolean, uraw as object, offs as integer, lengths as integer) as object
 
+	bzlib = CreateObject("roByteArray")
 	uzlib = CreateObject("roByteArray")
-
-
-	uzlib.push(lastcompress) 			' Final flag, Compression type 
-				
-	uzlib.push(lengths and &HFF)			' Length LSB 
-
-	uzlib.push( (lengths and &HFF00)/256 )		' Length MSB
-
-	uzlib.push( (NOT lengths) and &HFF)		' Length 1st complement LSB
-
-	uzlib.push(((NOT lengths) and &HFF00)/256)	' Length 1st complement MSB
-
-	
-'	sraw=uraw.toHexString()
-'	strraw=sraw.Mid(offs*2, (lengths)*2)
-'	uzlib.FromHexString(strraw)
-	
-	uzlib.append(rdBAcopy(uraw,offs,offs+lengths))	' Data 
-		
-
+	lst=rdIIf(lastcompress,1,0) 
+	uzlib.push(lst)			' Final flag, Compression type 
+	lsb= lengths and &HFF
+	uzlib.push( lsb)				' Length LSB 
+	msb=rdRightShift( (lengths and &HFF00),8)
+	'stop
+	uzlib.push(msb )	' Length MSB
+	nlsb=((NOT lengths) and &HFF) 
+	uzlib.push( nlsb)			' Length 1st complement LSB
+	nmsb =rdRightShift( ( (NOT lengths) and &HFF00),8)
+	'stop
+	uzlib.push( nmsb)' Length 1st complement MSB
+	bzlib = rdBAcopy(uraw,offs,offs+lengths)
+	uzlib.append(bzlib)		' Data 
+	'stop
 	return uzlib
 	
 end function

@@ -9,8 +9,6 @@
 ' * Right logical (non-sign-extending) shift *
 ' ********************************************
 function rdRightShift(num as integer, count = 1 as integer) as integer
-
-	if Sgn(num) then
 	mult    = 2 ^ count
 	summand = 1
 	total   = 0
@@ -21,10 +19,6 @@ function rdRightShift(num as integer, count = 1 as integer) as integer
 		end if
 		summand = summand * 2
 	end for
-	
-	else
-		total=num/(2^count)
-	end if
 
 	return total
 end function

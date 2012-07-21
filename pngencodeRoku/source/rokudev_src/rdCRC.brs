@@ -15,7 +15,6 @@
 function rdCRC() as object
 	this = {
 		' Member vars
-		TheCRC:&HFFFFFFFF
 		CRCTABLE: [
 &h00000000, &h77073096, &hee0e612c, &h990951ba,
 &h076dc419, &h706af48f, &he963a535, &h9e6495a3,
@@ -110,33 +109,18 @@ function rdCRC() as object
 			m.precomputed = true
 		end function
 
-		   updateCRC: function(crc as integer, buf as object) as integer
-			c% = crc
+		updateCRC: function(crc as integer, buf as object) as integer
+			c = crc
 
-		   lastn% = buf.count() - 1
-		   t = m.CRCTABLE
-			for n% = 0 to lastn%
-			    index% = ((c% and not buf[n%]) or (not c% and buf[n%]))  and &hFF
-			    shiftedc% = ((c% and &hFFFFFF00)/256) and &hFFFFFF
-			    'shiftedc% = shiftedc% and &hFFFFFF
-			    c% = ((shiftedc% and not t[index%]) or (not shiftedc% and t[index%]))
+			for n = 0 to buf.count() - 1
+				index = rdXOR(c, buf[n]) and &hFF
+				shiftedc = rdRightShift(c, 8)
+				c = rdXOR(m.CRCTABLE[index], shiftedc)
 			end for
 
-			return c%
-		    end function
+			return c
+		end function
 
-		   updateOneCRC: function(buf as integer) 
-		   crc=m.TheCRC
-		   t = m.CRCTABLE
-			    index = ((crc and not buf) or (not crc and buf))  and &hFF
-			    shiftedc = ((crc and &hFFFFFF00)/256) and &hFFFFFF
-			    m.TheCRC= ((shiftedc and not t[index]) or (not shiftedc and t[index]))
-
-		    end function
-		   TotalOneCRC: function() as integer
-		   	return m.TheCRC
-		    end function
-		    
 		' Expects buf to be an roByteArray
 		crc: function(buf as object, index_start = 0 as integer, index_end = -1 as integer) as integer
 			if index_start <> 0 or (index_end >= 0 and index_end <> buf.count() - 1)
