@@ -68,7 +68,7 @@ function main()
     screen.Clear(&HFFFFFF)
     screen.SwapBuffers()
     
-	bigbm=CreateObject("roBitmap", "pkg:/images/site_logo.png")
+	bigbm=CreateObject("roBitmap", "pkg:/images/site_logo.gif")
 
 	if bigbm = invalid
 		print "bigbm create failed"

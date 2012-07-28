@@ -8,6 +8,7 @@ function slice8CRC() as object
 	
 		updateSlice8CRC: function(num as integer, buf as object) as integer
 			crc% = num
+			t = m.crc32Lookup
 			lastn% = buf.count() - 1
 			n%=0
 			k%=0
@@ -29,15 +30,15 @@ function slice8CRC() as object
 				shiftedc%= ((crc% and &hFF000000)/16777216) and &hFFFFFF
 				current3% =( (shiftedc% and not current%) or (not shiftedc% and current% ) )  and &hFF
 
-				i7% = m.crc32Lookup[7][current0%]
-				i6% = m.crc32Lookup[6][current1%]
-				i5% = m.crc32Lookup[5][current2%]
-				i4% = m.crc32Lookup[4][current3%]
+				i7% = t[7][current0%]
+				i6% = t[6][current1%]
+				i5% = t[5][current2%]
+				i4% = t[4][current3%]
 
-				i3% = m.crc32Lookup[3][buf.GetSignedByte(n%)]:n%=n%+1
-				i2% = m.crc32Lookup[2][buf.GetSignedByte(n%)]:n%=n%+1
-				i1% = m.crc32Lookup[1][buf.GetSignedByte(n%)]:n%=n%+1
-				i0% = m.crc32Lookup[0][buf.GetSignedByte(n%)]:n%=n%+1
+				i3% = t[3][buf.GetSignedByte(n%)]:n%=n%+1
+				i2% = t[2][buf.GetSignedByte(n%)]:n%=n%+1
+				i1% = t[1][buf.GetSignedByte(n%)]:n%=n%+1
+				i0% = t[0][buf.GetSignedByte(n%)]:n%=n%+1
 				
 				'crc%= rdXOR(i7%,rdXOR(i6%,rdXOR(i5%,i4%)))
 				
@@ -66,7 +67,7 @@ function slice8CRC() as object
 				current% = buf.GetSignedByte(n%)':?n%
 				index% = ( (crc% and not current%) or (not crc% and current% ) )  and &hFF
 				shiftedc% = ((crc% and &hFFFFFF00)/256) and &hFFFFFF
-				crc% = ( (shiftedc% and not m.crc32Lookup[0][index%] ) or (not shiftedc% and m.crc32Lookup[0][index%]))
+				crc% = ( (shiftedc% and not t[0][index%] ) or (not shiftedc% and t[0][index%]))
 			end for					
 
 			return crc%

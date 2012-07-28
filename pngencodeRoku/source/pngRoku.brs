@@ -168,21 +168,30 @@ nextit:
 
 	endfor	
 	
-'    tmp = rdTempFile(".png")
-'    print "pixels File "+tmp    
-'    tixels.writefile(tmp)
+    'tmp = rdTempFile(".png")
+    'print "pixels File "+tmp    
+    'pltraw.writefile(tmp)
     
-'    myurl=CreateObject("roUrlTransfer")
-'    myurl.SetUrl("http://192.168.2.2/roku/upload.php")
-'    myurl.AddHeader("Content-Type", "image/png")
-'    myurl.PostFromFile(tmp)
+    'myurl=CreateObject("roUrlTransfer")
+    'myurl.SetUrl("http://192.168.2.2/roku/upload.php")
+    'myurl.AddHeader("Content-Type", "image/png")
+    'myurl.PostFromFile(tmp)
 	
+    'tmp = rdTempFile(".png")
+    'print "pixels File "+tmp    
+    'dtraw.writefile(tmp)
+    
+    'myurl=CreateObject("roUrlTransfer")
+    'myurl.SetUrl("http://192.168.2.2/roku/upload.php")
+    'myurl.AddHeader("Content-Type", "image/png")
+    'myurl.PostFromFile(tmp)
+    
 	print "draw.count = "+dtraw.count().toStr()
 
 	craw = CreateObject("roByteArray")	
 	craw= createPaletteChunk(pltraw)
-	'craw.append(toChunk("IDAT", toZLIB(dtraw)))
-	craw.append(IDATChunk(width,height, dtraw))
+	craw.append(toChunk("IDAT", toZLIB(dtraw)))
+	'craw.append(IDATChunk(width,height, dtraw))
 	'raw.append(createDataChunk(width, height, pixels))
 	return craw	
 end function
