@@ -5,7 +5,7 @@
 ' ****************************************************************
 function slice8CRC() as object
 	this = {
-	
+
 		updateSlice8CRC: function(num as integer, buf as object) as integer
 			crc% = num
 			t = m.crc32Lookup
@@ -17,15 +17,15 @@ function slice8CRC() as object
 				'test%= buf.GetSignedLong(n%)
 				current% = buf.GetSignedByte(n%):n%=n%+1
 				current0% =( (crc% and not current%) or (not crc% and current% ) )  and &hFF
-				
+
 				current% = buf.GetSignedByte(n%):n%=n%+1
 				shiftedc%= ((crc% and &hFFFFFF00)/256) and &hFFFFFF
 				current1% =( (shiftedc% and not current%) or (not shiftedc% and current% ) )  and &hFF
-				
+
 				current% = buf.GetSignedByte(n%):n%=n%+1
 				shiftedc%= ((crc% and &hFFFF0000)/65536) and &hFFFFFF
 				current2% =( (shiftedc% and not current%) or (not shiftedc% and current% ) )  and &hFF
-				
+
 				current% = buf.GetSignedByte(n%):n%=n%+1
 				shiftedc%= ((crc% and &hFF000000)/16777216) and &hFFFFFF
 				current3% =( (shiftedc% and not current%) or (not shiftedc% and current% ) )  and &hFF
@@ -35,27 +35,27 @@ function slice8CRC() as object
 				i5% = t[5][current2%]
 				i4% = t[4][current3%]
 
-				i3% = t[3][buf.GetSignedByte(n%)]:n%=n%+1
-				i2% = t[2][buf.GetSignedByte(n%)]:n%=n%+1
-				i1% = t[1][buf.GetSignedByte(n%)]:n%=n%+1
-				i0% = t[0][buf.GetSignedByte(n%)]:n%=n%+1
-				
+				i3% = t[3][buf.GetSignedByte(n%) and &hFF]:n%=n%+1
+				i2% = t[2][buf.GetSignedByte(n%) and &hFF]:n%=n%+1
+				i1% = t[1][buf.GetSignedByte(n%) and &hFF]:n%=n%+1
+				i0% = t[0][buf.GetSignedByte(n%) and &hFF]:n%=n%+1
+
 				'crc%= rdXOR(i7%,rdXOR(i6%,rdXOR(i5%,i4%)))
-				
+
 				'c0%= ( (i5% and not i4%) or (not i5% and i4% ) )
 				'c1%= ( (i6% and not c0%) or (not i6% and c0% ) )
 				'crc%=( (i7% and not c1%) or (not i7% and c1% ) )
 
 				'crc%=( (i7% and not ( (i6% and not ( (i5% and not i4%) or (not i5% and i4% ) )) or (not i6% and ( (i5% and not i4%) or (not i5% and i4% ) ) ) )) or (not i7% and ( (i6% and not ( (i5% and not i4%) or (not i5% and i4% ) )) or (not i6% and ( (i5% and not i4%) or (not i5% and i4% ) ) ) ) ) )
-				
+
 
 
 				'crc%= rdXOR(crc%,rdXOR(i3%,rdXOR(i2%,rdXOR(i1%,i0%))))
-				
+
 				'c0%= ( (i1%  and not i0%) or (not i1%  and i0% ) )
 				'c1%= ( (i2%  and not c0%) or (not i2%  and c0% ) )
 				'c2%= ( (i3%  and not c1%) or (not i3%  and c1% ) )
-				'crc%=( (crc% and not c2%) or (not crc% and c2% ) )				
+				'crc%=( (crc% and not c2%) or (not crc% and c2% ) )
 
 				crc%=( (( (i7% and not ( (i6% and not ( (i5% and not i4%) or (not i5% and i4% ) )) or (not i6% and ( (i5% and not i4%) or (not i5% and i4% ) ) ) )) or (not i7% and ( (i6% and not ( (i5% and not i4%) or (not i5% and i4% ) )) or (not i6% and ( (i5% and not i4%) or (not i5% and i4% ) ) ) ) ) ) and not ( (i3%  and not ( (i2%  and not ( (i1%  and not i0%) or (not i1%  and i0% ) )) or (not i2%  and ( (i1%  and not i0%) or (not i1%  and i0% ) ) ) )) or (not i3%  and ( (i2%  and not ( (i1%  and not i0%) or (not i1%  and i0% ) )) or (not i2%  and ( (i1%  and not i0%) or (not i1%  and i0% ) ) ) ) ) )) or (not ( (i7% and not ( (i6% and not ( (i5% and not i4%) or (not i5% and i4% ) )) or (not i6% and ( (i5% and not i4%) or (not i5% and i4% ) ) ) )) or (not i7% and ( (i6% and not ( (i5% and not i4%) or (not i5% and i4% ) )) or (not i6% and ( (i5% and not i4%) or (not i5% and i4% ) ) ) ) ) ) and ( (i3%  and not ( (i2%  and not ( (i1%  and not i0%) or (not i1%  and i0% ) )) or (not i2%  and ( (i1%  and not i0%) or (not i1%  and i0% ) ) ) )) or (not i3%  and ( (i2%  and not ( (i1%  and not i0%) or (not i1%  and i0% ) )) or (not i2%  and ( (i1%  and not i0%) or (not i1%  and i0% ) ) ) ) ) ) ) )
 
@@ -68,7 +68,7 @@ function slice8CRC() as object
 				index% = ( (crc% and not current%) or (not crc% and current% ) )  and &hFF
 				shiftedc% = ((crc% and &hFFFFFF00)/256) and &hFFFFFF
 				crc% = ( (shiftedc% and not t[0][index%] ) or (not shiftedc% and t[0][index%]))
-			end for					
+			end for
 
 			return crc%
 		end function
@@ -337,13 +337,13 @@ function slice8CRC() as object
 		]
 		precomputed: true
 		previousCrc32: 0
-		
+
 			populateTable: function() as boolean
-			
+
 				precomputed=true
 				return precomputed
-			end function 
-			
+			end function
+
 
 
 	}
