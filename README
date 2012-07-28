@@ -17,6 +17,7 @@ ported by Troy Davis(GPF) http://gpf.dcemu.co.uk
 
 uses librokudev - https://github.com/rokudev/librokudev
 
+uses the Slice-by-8 crc32 algorithm described in the blog @ http://create.stephan-brumme.com/crc32/
 
 Compilation
 -----------

@@ -60,7 +60,7 @@ function main()
 '   'stop
     
     
-    
+
     
     
     
@@ -68,7 +68,7 @@ function main()
     screen.Clear(&HFFFFFF)
     screen.SwapBuffers()
     
-	bigbm=CreateObject("roBitmap", "pkg:/images/site_logo.gif")
+	bigbm=CreateObject("roBitmap", "pkg:/images/site_logo.png")
 
 	if bigbm = invalid
 		print "bigbm create failed"
@@ -76,6 +76,7 @@ function main()
  	endif
 
    screen.drawobject(0, 0, bigbm)
+   'bigbm.Clear(&hFFFF)
    screen.SwapBuffers()
     
  ' Test PNGFB 
@@ -115,7 +116,7 @@ function main()
     'myurl.SetUrl("http://192.168.2.2/roku/upload.php")
     'myurl.AddHeader("Content-Type", "image/png")
     'myurl.PostFromFile(tmp)
-    
+     
     Print "Encoding PNG now"
     png = CreateObject("roByteArray")
 'm.profiler.start("Create PNG")     

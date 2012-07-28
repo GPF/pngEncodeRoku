@@ -54,8 +54,8 @@ function toPNG(width as integer, height as integer,pixels as object, indexed as 
 	else
 
 	data = CreateObject("roByteArray")
-	'data = createDataChunk(width, height, pixels)
-	data = IDATChunk(width,height, pixels)
+	data = createDataChunk(width, height, pixels)
+	'data = IDATChunk(width,height, pixels)
 	end if
 
 	trailer = CreateObject("roByteArray")	
@@ -181,7 +181,8 @@ nextit:
 
 	craw = CreateObject("roByteArray")	
 	craw= createPaletteChunk(pltraw)
-	craw.append(toChunk("IDAT", toZLIB(dtraw)))
+	'craw.append(toChunk("IDAT", toZLIB(dtraw)))
+	craw.append(IDATChunk(width,height, dtraw))
 	'raw.append(createDataChunk(width, height, pixels))
 	return craw	
 end function
@@ -261,21 +262,24 @@ function toChunk(id as string, traw as object) as object
 	chunk.append(bnid)
 	chunk.append(traw)
 	
+	'c=rdCRC()
+	c=slice8CRC()
+	
 	crc = &HFFFFFFFF
-	crc = rdCRC().updateCRC(crc,bnid)
-	crc = rdCRC().updateCRC(crc,traw)
+	crc = c.updateSlice8CRC(crc,bnid)
+	crc = c.updateSlice8CRC(crc,traw)
 	
 	achunk = (rdINTtoBA(not crc))	
 	chunk.append(achunk)
-	'print "crc.count = "+achunk.count().toStr()
+	print "crc.count = "+achunk.count().toStr()
 	return chunk
 	
 end function 
 
-function IDATChunk(width as integer,height as integer,pixels as object) as object
+function IDATChunk(width% as integer,height% as integer,pixels as object) as object
 
 	chunk = CreateObject("roByteArray")
-
+	chunk.setresize(pixels.count() + height% + 100,true)
 	chunk.push(0)'placeholder for idat size
 	chunk.push(0)'placeholder for idat size
 	chunk.push(0)'placeholder for idat size
@@ -283,68 +287,78 @@ function IDATChunk(width as integer,height as integer,pixels as object) as objec
 	
 	n=ADLER32calc()
 	c=rdCRC()
+	'c.populateTable()
 	
-	y=0
-	x=0
-	f=0
-	BLOCK_SIZE = 32000
-	zlength=BLOCK_SIZE
+	y%=0
+	x%=0
+	f%=0
+	BLOCK_SIZE% = 65535
+	zlength%=BLOCK_SIZE%
 	
-	id=asc("I"):chunk.push(id):c.updateOneCRC(id)
-	id=asc("D"):chunk.push(id):c.updateOneCRC(id)
-	id=asc("A"):chunk.push(id):c.updateOneCRC(id)
-	id=asc("T"):chunk.push(id):c.updateOneCRC(id)
+	id%=asc("I"):chunk.push(id%):c.updateOneCRC(id%)
+	id%=asc("D"):chunk.push(id%):c.updateOneCRC(id%)
+	id%=asc("A"):chunk.push(id%):c.updateOneCRC(id%)
+	id%=asc("T"):chunk.push(id%):c.updateOneCRC(id%)
 
 	'Zlib Header
-	id=8:chunk.push(id):c.updateOneCRC(id):f=f+1						' CM = 8, CMINFO = 0
-	id=(31 - ( (8*2^8) MOD 31 ) ) MOD 31:chunk.push(id):c.updateOneCRC(id):f=f+1		' FCHECK (FDICT/FLEVEL=0)
+	chunk.push(8):c.updateOneCRC(8)						' CM = 8, CMINFO = 0
+	chunk.push(29):c.updateOneCRC(29):f%=f%+2				' FCHECK (FDICT/FLEVEL=0)
 
-	for i = 0 to pixels.count()-1
+	for i% = 0 to pixels.count()-1
 	
-		if ((y+x) MOD (BLOCK_SIZE)) =0 then 
+		if ((y%+x%) MOD (BLOCK_SIZE%)) =0 then 
 
-			if (( pixels.count()-y) < BLOCK_SIZE) then
-				zlength=(pixels.count()-y)+(height-x)
-				id=1:chunk.push(id):c.updateOneCRC(id):f=f+1			' Final flag, Compression type
-				print "y= "+y.toStr()
+			if (( pixels.count()-y%) < BLOCK_SIZE%) then
+				zlength%=(pixels.count()-y%)'+(height%-x%)
+				chunk.push(1):c.updateOneCRC(1)						' Final flag, Compression type
+				print "y= "+y%.toStr()
+
+				print "zlength= "+zlength%.toStr()
+				id%=(zlength% and &HFF):chunk.push(id%):c.updateOneCRC(id%)		' Length LSB 
+
+				id%=((zlength% and &HFF00)/256):chunk.push(id%):c.updateOneCRC(id%)	' Length MSB
+
+				id%=( (NOT zlength%) and &HFF):chunk.push(id%):c.updateOneCRC(id%)	' Length 1st complement LSB
+
+				id%=( ( (NOT zlength%) and &HFF00)/256) 				' Length 1st complement MSB	
+				chunk.push(id%):c.updateOneCRC(id%):f%=f%+5
+
 			else
 				
-				id=0:chunk.push(id):c.updateOneCRC(id):f=f+1			' Final flag, Compression type 
-				print "lasty= "+y.toStr()
+				chunk.push(0):c.updateOneCRC(0)						' Final flag, Compression type 
+				print "lasty= "+y%.toStr()
+				print "zlength= "+zlength%.toStr()
+				chunk.push(255):c.updateOneCRC(255)					' Length LSB 
+
+				chunk.push(255):c.updateOneCRC(255)					' Length MSB
+
+				chunk.push(0):c.updateOneCRC(0)						' Length 1st complement LSB
+
+				chunk.push(0):c.updateOneCRC(0):f%=f%+5					' Length 1st complement MSB	
 				
-                        endif
-
-                        print "zlength= "+zlength.toStr()
-			id=(zlength and &HFF):chunk.push(id):c.updateOneCRC(id):f=f+1		' Length LSB 
-
-			id=((zlength and &HFF00)/256):chunk.push(id):c.updateOneCRC(id):f=f+1	' Length MSB
-
-			id=( (NOT zlength) and &HFF):chunk.push(id):c.updateOneCRC(id):f=f+1	' Length 1st complement LSB
-
-			id=( ( (NOT zlength) and &HFF00)/256) 					' Length 1st complement MSB	
-			chunk.push(id):c.updateOneCRC(id):f=f+1
+			endif
 		endif
 		
-		if(y MOD (width*4)) =0 then
-			id=0:chunk.push(id):c.updateOneCRC(id):n.UpdateAdler(id):f=f+1		'no Filter
-			x=x+1
-		endif
+		'if(y% MOD (width%*4)) =0 then
+		'	chunk.push(0):c.updateOneCRC(0):n.UpdateAdler(0):f%=f%+1		'no Filter
+		'	x%=x%+1
+		'endif
 		
-		id=pixels[i]:chunk.push(id):
-		c.updateOneCRC(id):n.UpdateAdler(id):f=f+1
-		y=y+1
+		id%=pixels.GetSignedByte(i%):chunk.push(id%):
+		c.updateOneCRC(id%):n.UpdateAdler(id%):f%=f%+1
+		y%=y%+1
 	endfor
 
 	
-	ad=n.TotalAdler()
+	ad%=n.TotalAdler()
 	temp = CreateObject("roByteArray")
-	temp = rdINTtoBA(ad)
-	id=temp[0]:chunk.push(id):c.updateOneCRC(id):f=f+1
-	id=temp[1]:chunk.push(id):c.updateOneCRC(id):f=f+1
-	id=temp[2]:chunk.push(id):c.updateOneCRC(id):f=f+1
-	id=temp[3]:chunk.push(id):c.updateOneCRC(id):f=f+1
+	temp = rdINTtoBA(ad%)
+	id%=temp.GetSignedByte(0):chunk.push(id%):c.updateOneCRC(id%):f%=f%+1
+	id%=temp.GetSignedByte(1):chunk.push(id%):c.updateOneCRC(id%):f%=f%+1
+	id%=temp.GetSignedByte(2):chunk.push(id%):c.updateOneCRC(id%):f%=f%+1
+	id%=temp.GetSignedByte(3):chunk.push(id%):c.updateOneCRC(id%):f%=f%+1
 
-	datsize=rdINTtoBA(f) 'idat size
+	datsize=rdINTtoBA(f%) 'idat size
 	chunk[0]=datsize[0]
 	chunk[1]=datsize[1]
 	chunk[2]=datsize[2]

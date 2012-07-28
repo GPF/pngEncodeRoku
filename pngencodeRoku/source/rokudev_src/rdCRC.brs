@@ -15,7 +15,8 @@
 function rdCRC() as object
 	this = {
 		' Member vars
-		TheCRC:&HFFFFFFFF
+		TheCRC%:&HFFFFFFFF
+		CRCTABLE2: []
 		CRCTABLE: [
 &h00000000, &h77073096, &hee0e612c, &h990951ba,
 &h076dc419, &h706af48f, &he963a535, &h9e6495a3,
@@ -81,30 +82,22 @@ function rdCRC() as object
 &hbad03605, &hcdd70693, &h54de5729, &h23d967bf,
 &hb3667a2e, &hc4614ab8, &h5d681b02, &h2a6f2b94,
 &hb40bbe37, &hc30c8ea1, &h5a05df1b, &h2d02ef8d
-		]
-
+		] 
 		precomputed: false
 
 		' Methods
 		' Populate the CRC lookup table.  Not used
 		populateTable: function() as boolean
-			m.CRCTABLE = []
-
 			for n = 0 to 255
-			'for n = 254 to 255 ' just for testing
 				c = n
 				for k = 0 to 7
-					if (c and 1) ' c & 1
-						' c1 = int(c/2) and &h7FFFFFFF
-						c1 = rdRightShift(c)
-						' c = ((&hEDB88320 and not c1) or (not &hEDB88320 and c1))
-						c = rdXOR(&hEDB88320,c1)
+					if (c and 1) 
+						c = &Hedb88320 ^ (rdRightShift(c,1))
 					else
-						' c = int(c/2) and &h7FFFFFFF
-						c = rdRightShift(c)
+						c = (rdRightShift(c,1))
 					end if
 				end for
-				m.CRCTABLE[n] = c
+				m.CRCTABLE2[n] = c
 			end for
 
 			m.precomputed = true
@@ -116,25 +109,23 @@ function rdCRC() as object
 		   lastn% = buf.count() - 1
 		   t = m.CRCTABLE
 			for n% = 0 to lastn%
-			    index% = ((c% and not buf[n%]) or (not c% and buf[n%]))  and &hFF
+			    index% = ( (c% and not buf.GetSignedByte(n%)) or (not c% and buf.GetSignedByte(n%) ) )  and &hFF
 			    shiftedc% = ((c% and &hFFFFFF00)/256) and &hFFFFFF
-			    'shiftedc% = shiftedc% and &hFFFFFF
 			    c% = ((shiftedc% and not t[index%]) or (not shiftedc% and t[index%]))
 			end for
 
 			return c%
 		    end function
 
-		   updateOneCRC: function(buf as integer) 
-		   crc=m.TheCRC
+		   updateOneCRC: function(buf% as integer) 
+		   crc%=m.TheCRC%
 		   t = m.CRCTABLE
-			    index = ((crc and not buf) or (not crc and buf))  and &hFF
-			    shiftedc = ((crc and &hFFFFFF00)/256) and &hFFFFFF
-			    m.TheCRC= ((shiftedc and not t[index]) or (not shiftedc and t[index]))
-
+			    index% = ((crc% and not buf%) or (not crc% and buf%))  and &hFF
+			    shiftedc% = ((crc% and &hFFFFFF00)/256) and &hFFFFFF
+			    m.TheCRC%= ((shiftedc% and not t[index%]) or (not shiftedc% and t[index%]))
 		    end function
 		   TotalOneCRC: function() as integer
-		   	return m.TheCRC
+		   	return m.TheCRC%
 		    end function
 		    
 		' Expects buf to be an roByteArray
